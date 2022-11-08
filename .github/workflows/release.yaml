@@ -1,7 +1,6 @@
 name: Release
 
 on:
-  workflow_dispatch:
   push:
     tags:
       - v*
@@ -23,7 +22,7 @@ permissions:
 jobs:
   build-linux-amd64:
     name: Build & push linux/amd64
-    if: github.repository == 'argoproj/argo-workflows'
+    # if: github.repository == 'argoproj/argo-workflows'
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -82,7 +81,7 @@ jobs:
 
   build-linux-arm64:
     name: Build & push linux/arm64
-    if: github.repository == 'argoproj/argo-workflows'
+    # if: github.repository == 'argoproj/argo-workflows'
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -114,13 +113,6 @@ jobs:
           username: ${{ secrets.DOCKERIO_USERNAME }}
           password: ${{ secrets.DOCKERIO_PASSWORD }}
 
-      - name: Docker Login
-        uses: docker/login-action@v2
-        with:
-          registry: quay.io
-          username: ${{ secrets.QUAYIO_USERNAME }}
-          password: ${{ secrets.QUAYIO_PASSWORD }}
-
       - name: Docker Buildx
         env:
           DOCKERIO_ORG: ${{ secrets.DOCKERIO_ORG }}
@@ -142,14 +134,6 @@ jobs:
             --platform="${PLATFORM}" \
             --target $TARGET \
             --tag $image_name .
-
-          docker buildx build \
-            --cache-from "type=local,src=/tmp/.buildx-cache" \
-            --cache-to "type=local,dest=/tmp/.buildx-cache" \
-            --output "type=image,push=true" \
-            --platform="${PLATFORM}" \
-            --target $TARGET \
-            --tag quay.io/$image_name .
 
   build-windows:
     name: Build & push windows
@@ -184,7 +168,7 @@ jobs:
 
   push-images:
     name: Push manifest with all images
-    if: github.repository == 'argoproj/argo-workflows'
+    # if: github.repository == 'argoproj/argo-workflows'
     runs-on: ubuntu-latest
     needs: [ build-linux-amd64, build-linux-arm64, build-windows ]
     steps:
@@ -194,13 +178,6 @@ jobs:
         with:
           username: ${{ secrets.DOCKERIO_USERNAME }}
           password: ${{ secrets.DOCKERIO_PASSWORD }}
-
-      - name: Login to Quay
-        uses: Azure/docker-login@v1
-        with:
-          login-server: quay.io
-          username: ${{ secrets.QUAYIO_USERNAME }}
-          password: ${{ secrets.QUAYIO_PASSWORD }}
 
       - name: Push Multiarch Image
         env:
@@ -221,19 +198,16 @@ jobs:
 
             if [ $target = "argoexec" ]; then
               docker manifest create $image_name ${image_name}-linux-arm64 ${image_name}-linux-amd64 ${image_name}-windows
-              docker manifest create quay.io/$image_name quay.io/${image_name}-linux-arm64 quay.io/${image_name}-linux-amd64 quay.io/${image_name}-windows
             else
               docker manifest create $image_name ${image_name}-linux-arm64 ${image_name}-linux-amd64
-              docker manifest create quay.io/$image_name quay.io/${image_name}-linux-arm64 quay.io/${image_name}-linux-amd64
             fi
 
             docker manifest push $image_name
-            docker manifest push quay.io/$image_name
           done
 
   test-images-linux-amd64:
     name: Try pulling linux/amd64
-    if: github.repository == 'argoproj/argo-workflows'
+    # if: github.repository == 'argoproj/argo-workflows'
     runs-on: ubuntu-latest
     needs: [ push-images ]
     strategy:
@@ -246,13 +220,6 @@ jobs:
         with:
           username: ${{ secrets.DOCKERIO_USERNAME }}
           password: ${{ secrets.DOCKERIO_PASSWORD }}
-
-      - name: Login to Quay
-        uses: Azure/docker-login@v1
-        with:
-          login-server: quay.io
-          username: ${{ secrets.QUAYIO_USERNAME }}
-          password: ${{ secrets.QUAYIO_PASSWORD }}
 
       - name: Docker Buildx
         env:
@@ -267,12 +234,11 @@ jobs:
 
           image_name="${DOCKERIO_ORG}/${TARGET}:${tag}"
           docker pull $image_name
-          docker pull quay.io/$image_name
 
   test-images-windows:
     name: Try pulling windows
-    if: github.repository == 'argoproj/argo-workflows'
-    runs-on: windows-2019
+    # if: github.repository == 'argoproj/argo-workflows'
+    runs-on: windows-2022
     needs: [ push-images ]
     steps:
       - name: Docker Login
@@ -281,12 +247,6 @@ jobs:
           username: ${{ secrets.DOCKERIO_USERNAME }}
           password: ${{ secrets.DOCKERIO_PASSWORD }}
 
-      - name: Login to Quay
-        uses: Azure/docker-login@v1
-        with:
-          login-server: quay.io
-          username: ${{ secrets.QUAYIO_USERNAME }}
-          password: ${{ secrets.QUAYIO_PASSWORD }}
       - name: Try pulling
         env:
           DOCKERIO_ORG: ${{ secrets.DOCKERIO_ORG }}
@@ -301,7 +261,6 @@ jobs:
           for target in $targets; do
             image_name="${docker_org}/${target}:${tag}"
             docker pull $image_name
-            docker pull quay.io/$image_name
           done
 
   publish-release:
