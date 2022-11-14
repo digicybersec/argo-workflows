@@ -151,6 +151,7 @@ jobs:
         env:
           DOCKERIO_ORG: ${{ secrets.DOCKERIO_ORG }}
         run: |
+          docker_org=$DOCKERIO_ORG
           target="argoexec"
           tag="latest"
           image_name="${docker_org}/${target}:${tag}-windows"
