@@ -177,6 +177,7 @@ jobs:
       - name: Docker Login
         uses: Azure/docker-login@v1
         with:
+          login-server: ${{ secrets.DOCKERIO_ORG }}
           username: ${{ secrets.DOCKERIO_USERNAME }}
           password: ${{ secrets.DOCKERIO_PASSWORD }}
 
@@ -219,6 +220,7 @@ jobs:
       - name: Docker Login
         uses: Azure/docker-login@v1
         with:
+          login-server: ${{ secrets.DOCKERIO_ORG }}
           username: ${{ secrets.DOCKERIO_USERNAME }}
           password: ${{ secrets.DOCKERIO_PASSWORD }}
 
@@ -245,6 +247,7 @@ jobs:
       - name: Docker Login
         uses: Azure/docker-login@v1
         with:
+          login-server: ${{ secrets.DOCKERIO_ORG }}
           username: ${{ secrets.DOCKERIO_USERNAME }}
           password: ${{ secrets.DOCKERIO_PASSWORD }}
 
