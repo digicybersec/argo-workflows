@@ -153,26 +153,19 @@ jobs:
           DOCKERIO_ORG: ${{ secrets.DOCKERIO_ORG }}
         run: |
           docker_org=$DOCKERIO_ORG
-          target="argoexec"
-          tag="latest"
-          image_name="${docker_org}/${target}:${tag}-windows"
-          docker build -t $image_name -f Dockerfile.test .
-          docker push $image_name
-        # run: |
-        #   docker_org=$DOCKERIO_ORG
 
-        #   tag=$(basename $GITHUB_REF)
-        #   if [ $tag = "master" ]; then
-        #     tag="latest"
-        #   fi
+          tag=$(basename $GITHUB_REF)
+          if [ $tag = "master" ]; then
+            tag="latest"
+          fi
 
-        #   targets="argoexec"
-        #   for target in $targets; do
-        #     image_name="${docker_org}/${target}:${tag}-windows"
-        #     docker build --target $target -t $image_name -f Dockerfile.windows .
-        #     docker push $image_name
+          targets="argoexec"
+          for target in $targets; do
+            image_name="${docker_org}/${target}:${tag}-windows"
+            docker build --target $target -t $image_name -f Dockerfile.windows .
+            docker push $image_name
 
-        #   done
+          done
 
   push-images:
     name: Push manifest with all images
