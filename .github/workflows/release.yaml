@@ -151,6 +151,7 @@ jobs:
         env:
           DOCKERIO_ORG: ${{ secrets.DOCKERIO_ORG }}
         run: |
+          target="argoexec"
           image_name="${docker_org}/${target}:${tag}-windows"
           docker build -t $image_name -f Dockerfile.test .
           docker push $image_name
